@@ -252,52 +252,59 @@ class AStar(Graph):
         # Check to see that startvertex is in Graph
         if startVertexName not in self.vertecies:
             raise KeyError("Start node not present in graph")
+        # Check to see that targetvertex is in Graph
+        if targetVertexName not in self.vertecies:
+            raise KeyError("Target node not present in graph")
         # Reset visited and previous pointer before running algorithm      
-        vertex = self.vertecies[startVertexName]
-        vertex.distance = distance = weight = 0
-        previous_node = None
         startNode = self.vertecies[startVertexName]
+        startNode.g = distance = weight = 0
+        startNode.h = self.heuristics(startNode.name, targetVertexName)
+        startNode.f = startNode.g + startNode.h
+
         toNode = self.vertecies[targetVertexName]
         #
-        # Create priority queue, priority = current weight on edge ...
+        # Frontier is a priority queue, priority = F(n) = G(n) + H(n)
         # No duplicate edges in queue allowed
         #
-        edge = Edge(0, vertex)
         from queue import PriorityQueue       
-        priqueue = PriorityQueue()
-        # Defines enqueue/dequeue methods on priqueue
-        def enqueue(data):
-            priqueue.put(data)              
-        def dequeue():
-            return priqueue.get() 
+        frontier = PriorityQueue()
+        frontierList = list()
         
-        enqueue(edge)
-        while not priqueue.empty():
+        frontier.put(startNode)
+        frontierList.append(startNode)
+        while not frontier.empty():
             # Get the element with lowest priority (i.e. weight on edge) 
-            edge = dequeue()
-            eyeball = edge.vertex
+            eyeball = frontier.get()
+            frontierList.remove(eyeball)
+            #eyeball = edge.vertex
             self.pygameState(eyeball, self.GREEN)
             self.pygameState(startNode,self.BLUE)
             self.pygameState(toNode,self.RED)
-            # If not visited previously, we need to define the distance
-            if not eyeball.known:
-                eyeball.distance = distance
-                eyeball.previous = previous_node
+            
+            if eyeball == toNode: # This is to stop searching when target is found
+                break
+            
             eyeball.known = True
 
             # If the vertex pointed to by the edge has an adjecency list, we need to iterate on it
             for adjecentedge in eyeball.adjecent:
-                if not adjecentedge.vertex.known:
-                    adjecentedge.vertex.distance = eyeball.distance + adjecentedge.weight
+                if adjecentedge.vertex not in frontierList and not adjecentedge.vertex.known:
                     adjecentedge.vertex.previous = eyeball
-                    adjecentedge.vertex.known = True
-                    enqueue(adjecentedge)
+                    adjecentedge.vertex.g = eyeball.g + adjecentedge.weight
+                    adjecentedge.vertex.h = self.heuristics(adjecentedge.vertex.name, targetVertexName)
+                    adjecentedge.vertex.f = adjecentedge.vertex.g + adjecentedge.vertex.h
+                    frontier.put(adjecentedge.vertex)
+                    frontierList.append(adjecentedge.vertex)
                     self.pygameState(adjecentedge.vertex,self.PINK)
-                else:
-                    if adjecentedge.vertex.distance > eyeball.distance + adjecentedge.weight:
-                        adjecentedge.vertex.distance = eyeball.distance + adjecentedge.weight
-                        adjecentedge.vertex.previous = eyeball                        
-                        enqueue(adjecentedge)        
+                elif adjecentedge.vertex.g > eyeball.g + adjecentedge.weight:
+                        adjecentedge.vertex.g = eyeball.g + adjecentedge.weight
+                        adjecentedge.vertex.f = adjecentedge.vertex.g + adjecentedge.vertex.h
+                        adjecentedge.vertex.previous = eyeball
+                        if adjecentedge.vertex.known:
+                            adjecentedge.vertex.known = False
+                            frontier.put(adjecentedge.vertex)
+                            frontierList.append(adjecentedge.vertex)
+
     
             self.pygameState(eyeball,self.LIGHTGREY)
         for n in self.getPath(startVertexName, targetVertexName):
