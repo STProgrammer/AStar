@@ -2,6 +2,7 @@ from Graph import Graph
 from Vertex import Vertex
 from Edge import Edge
 
+
 import pygame as pg
 '''
 The AStar class inherits the Graph class
@@ -262,17 +263,24 @@ class AStar(Graph):
 
         toNode = self.vertecies[targetVertexName]
         #
-        # Frontier is an array used as PriorityQueue, priority = F(n) = G(n) + H(n)
+        # Frontier is a priority queue, priority = F(n) = G(n) + H(n)
+        # No duplicate edges in queue allowed
         #
-
-        frontier = list() 
-        frontier.append(startNode)
+        from queue import PriorityQueue       
+        frontier = PriorityQueue()
+        frontierList = list()
         
-        while len(frontier) > 0:
-            # Get the element with lowest priority (i.e. lower F(n)) 
-            eyeball = min(frontier)
-            frontier.remove(eyeball)
-
+        frontier.put(startNode)
+        frontierList.append(startNode)
+        while not frontier.empty():
+            # Get the element with lowest priority (i.e. weight on edge) 
+            eyeball = frontier.get()
+            eyeball2 = min(frontierList)
+            frontierList.remove(eyeball)
+            if eyeball2 != eyeball:
+                print("They are not equal")
+                
+            #eyeball = edge.vertex
             self.pygameState(eyeball, self.GREEN)
             self.pygameState(startNode,self.BLUE)
             self.pygameState(toNode,self.RED)
@@ -284,35 +292,31 @@ class AStar(Graph):
 
             # If the vertex pointed to by the edge has an adjecency list, we need to iterate on it
             for adjecentedge in eyeball.adjecent:
-                new_cost = eyeball.g + adjecentedge.weight
-                #Exploring its neighbors
-                if adjecentedge.vertex not in frontier and not adjecentedge.vertex.known:
+                if adjecentedge.vertex not in frontierList and not adjecentedge.vertex.known:
                     adjecentedge.vertex.previous = eyeball
-                    adjecentedge.vertex.g = new_cost
+                    adjecentedge.vertex.g = eyeball.g + adjecentedge.weight
                     adjecentedge.vertex.h = self.heuristics(adjecentedge.vertex.name, targetVertexName)
-                    adjecentedge.vertex.f = new_cost
-                    frontier.append(adjecentedge.vertex)
+                    adjecentedge.vertex.f = adjecentedge.vertex.g + adjecentedge.vertex.h
+                    frontier.put(adjecentedge.vertex)
+                    if adjecentedge.vertex not in frontierList:
+                        frontierList.append(adjecentedge.vertex)
                     self.pygameState(adjecentedge.vertex,self.PINK)
-                #Check if there's a shorter path to the neighbor node
-                elif adjecentedge.vertex.g > new_cost:
-                        # We update the node
-                        adjecentedge.vertex.g = new_cost
+                elif adjecentedge.vertex.g > eyeball.g + adjecentedge.weight:
+                        adjecentedge.vertex.g = eyeball.g + adjecentedge.weight
                         adjecentedge.vertex.f = adjecentedge.vertex.g + adjecentedge.vertex.h
                         adjecentedge.vertex.previous = eyeball
-                        # If the node is known, we mark it as unknown and add to frontier 
-                        # to explore it again. This part shouldn't execute in our examples
                         if adjecentedge.vertex.known:
                             adjecentedge.vertex.known = False
-                            frontier.append(adjecentedge.vertex)
-                            self.pygameState(adjecentedge.vertex,self.PINK)
+                            frontier.put(adjecentedge.vertex)
+                            if adjecentedge.vertex not in frontierList:
+                                frontierList.append(adjecentedge.vertex)
+                            frontierList.append(adjecentedge.vertex)
 
     
             self.pygameState(eyeball,self.LIGHTGREY)
         for n in self.getPath(startVertexName, targetVertexName):
             self.pygameState(n,self.DARKGREEN)
         return self.getPath(startVertexName, targetVertexName) 
-
-
     
 astar = AStar(delay = 0, visual = True)
 
@@ -324,8 +328,6 @@ astar = AStar(delay = 0, visual = True)
 #startVertexName, targetVertexName, removed = astar.readLimitations('biggraph_xtras.txt')
 astar.readFile('AStarObligGraf.txt')
 startVertexName, targetVertexName, removed = astar.readLimitations('AStarObligGraf_xtras.txt')
-#astar.readFile('AStarObligGraf-changed.txt')
-#startVertexName, targetVertexName, removed = astar.readLimitations('AStarObligGraf_xtras-changed.txt')
 
 #astar.Dijkstra(startVertexName,targetVertexName)
 astar.AStarSearch(startVertexName, targetVertexName)
@@ -335,7 +337,7 @@ if astar.pygame:
     while astar.pygame:
         for events in pg.event.get():
             if events.type == QUIT:
-    
+                
                 exit(0)
     pg.quit()
 else:
