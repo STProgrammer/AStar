@@ -62,7 +62,7 @@ class Graph():
             vertex = self.vertecies[v]
             vertex.distance = None
             
-        # Create a FIFO-queue and define enqueue / dequeue
+        # Initialize a FIFO-queue and define enqueue / dequeue
         from queue import SimpleQueue       
         queue = SimpleQueue()  
 
@@ -144,7 +144,7 @@ class Graph():
         vertex.distance = distance = weight = 0
         previous_node = None
         #
-        # Create priority queue, priority = current weight on edge ...
+        # Initialize priority queue, priority = current weight on edge ...
         # No duplicate edges in queue allowed
         #
         edge = Edge(0, vertex)
@@ -189,7 +189,7 @@ class Graph():
             vertex = self.vertecies[v]
             for edge in vertex.adjecent:
                 self.vertecies[edge.vertex.name].indegree += 1
-        # Create a FIFO-queue and define enqueue / dequeue
+        # Initialize a FIFO-queue and define enqueue / dequeue
         from queue import SimpleQueue       
         queue = SimpleQueue()  
 
@@ -228,7 +228,7 @@ class Graph():
             vertex = self.vertecies[v]
             for edge in vertex.adjecent:
                 self.vertecies[edge.vertex.name].indegree += 1
-        # Create a FIFO-queue and define enqueue / dequeue
+        # Initialize a FIFO-queue and define enqueue / dequeue
         from queue import SimpleQueue       
         queue = SimpleQueue()  
 

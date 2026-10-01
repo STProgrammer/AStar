@@ -81,7 +81,7 @@ class AStar(Graph):
 
     '''       
     # Initialize pygame visualization, if visualization has been defined
-    # Creates a dynamic visual grid according to the number of columns and rows
+    # Builds a dynamic visual grid according to the number of columns and rows
     # read/defined during initialization. The visual limitations are defined by 1000x1000 pixels
     '''       
     def initPygame(self):
@@ -192,7 +192,7 @@ class AStar(Graph):
         startNode = self.vertecies[startVertexName]
         toNode = self.vertecies[targetVertexName]
         #
-        # Create priority queue, priority = current weight on edge ...
+        # Initialize priority queue, priority = current weight on edge ...
         # No duplicate edges in queue allowed
         #
         edge = Edge(0, vertex)
